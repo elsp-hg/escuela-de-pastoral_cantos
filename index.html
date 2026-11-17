@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173f35">
+  <title> canciones para compartir </title>
+  <style>
+    :root {
+      --green: #173f35;
+      --green-2: #245b4c;
+      --cream: #fbf8ef;
+      --paper: #fffdf8;
+      --ink: #202923;
+      --muted: #59665e;
+      --gold: #e6bd62;
+      --line: #dedfd5;
+      --focus: #a44d13;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--cream);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      color: white;
+      background: var(--green);
+      padding: 2.2rem 1rem 2rem;
+      text-align: center;
+      border-bottom: 6px solid var(--gold);
+    }
+    header .symbol { font-size: 2.2rem; margin-bottom: .4rem; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.15; }
+    header p { margin: .8rem auto 0; max-width: 42rem; font-size: 1.15rem; color: #f4f0e4; }
+    main { width: min(920px, calc(100% - 2rem)); margin: 1.5rem auto 3rem; }
+    .player-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1.25rem;
+      box-shadow: 0 5px 18px rgba(25, 48, 37, .07);
+      margin-bottom: 1.5rem;
+    }
+    .eyebrow {
+      margin: 0 0 .25rem;
+      color: var(--green-2);
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      font-size: .85rem;
+    }
+    #nowPlaying { margin: 0 0 1rem; font-size: clamp(1.35rem, 4vw, 1.8rem); }
+    audio { width: 100%; min-height: 52px; }
+    .player-help { color: var(--muted); margin: .65rem 0 0; font-size: 1rem; }
+    .section-heading {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      align-items: end; gap: .5rem; margin: 1.8rem 0 .8rem;
+    }
+    h2 { font-size: 1.45rem; margin: 0; }
+    #count { color: var(--muted); font-size: 1rem; }
+    .track-list { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+    .track {
+      display: flex; align-items: center; gap: .8rem;
+      width: 100%; min-height: 76px; padding: .85rem 1rem;
+      text-align: left; color: var(--ink); background: var(--paper);
+      border: 2px solid var(--line); border-radius: 14px;
+      cursor: pointer; font: inherit;
+    }
+    .track:hover { border-color: var(--green-2); background: #f4f7f1; }
+    .track[aria-current="true"] {
+      border-color: var(--green-2); background: #eaf2ec;
+      box-shadow: inset 5px 0 0 var(--green-2);
+    }
+    .number {
+      flex: 0 0 2.6rem; height: 2.6rem; border-radius: 50%;
+      display: grid; place-items: center; color: white;
+      background: var(--green); font-weight: 700; font-size: 1.05rem;
+    }
+    .track-name { font-weight: 700; font-size: 1.05rem; }
+    .play-mark { margin-left: auto; color: var(--green-2); font-size: 1.2rem; }
+    button:focus-visible, audio:focus-visible {
+      outline: 4px solid var(--focus); outline-offset: 3px;
+    }
+    footer { text-align: center; color: var(--muted); padding: 0 1rem 2rem; font-size: .95rem; }
+    @media (max-width: 620px) {
+      .track-list { grid-template-columns: 1fr; }
+      main { width: min(100% - 1rem, 920px); margin-top: 1rem; }
+      .player-card { padding: 1rem; }
+      .track { min-height: 72px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="symbol" aria-hidden="true">♫</div>
+    <h1>Canciones para compartir</h1>
+    <p>Un espacio para escuchar, recordar y disfrutar. Elija una canción de la lista.</p>
+  </header>
+
+  <main>
+    <section class="player-card" aria-labelledby="nowPlaying">
+      <p class="eyebrow">Reproductor</p>
+      <h2 id="nowPlaying" aria-live="polite">Seleccione una canción</h2>
+      <audio id="audioPlayer" controls preload="none">
+        Su navegador no puede reproducir audio. Intente abrir esta página en otro navegador.
+      </audio>
+      <p class="player-help">Use el botón ▶ para reproducir y los controles para pausar o ajustar el volumen.</p>
+    </section>
+
+    <div class="section-heading">
+      <h2>Lista de canciones</h2>
+      <span id="count">21 canciones</span>
+    </div>
+    <section class="track-list" id="trackList" aria-label="Canciones disponibles"></section>
+  </main>
+
+  <footer>Puede escuchar las canciones desde su computadora, tableta o teléfono.</footer>
+
+  <script>
+    // Si sus archivos MP3 están en una carpeta llamada "audio", deje esta ruta.
+    // Si están junto a index.html, cambie AUDIO_FOLDER por "".
+    const AUDIO_FOLDER = "audio/";
+
+    const songs = [
+      "Saludo matinal",
+      "Ese es mi ideal",
+      "Himno a la acción pastoral",
+      "Tras de mi pastor",
+      "Tu mirada",
+      "El zagal",
+      "El redil",
+      "Cuatro dones",
+      "Escuela de pastoral",
+      "Vuela gaviota",
+      "El compromiso",
+      "Entregarse",
+      "Para evangelizar",
+      "Ya soy otro",
+      "Botica espiritual",
+      "Tengo un ideal",
+      "Id amigos",
+      "Iglesia peregrina",
+      "Consagración a María, madre de la Iglesia",
+      "Ven Señor",
+      "Al caer la tarde"
+    ];
+
+    const player = document.getElementById("audioPlayer");
+    const title = document.getElementById("nowPlaying");
+    const list = document.getElementById("trackList");
+
+    songs.forEach((song, index) => {
+      const number = String(index + 1).padStart(2, "0");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "track";
+      button.setAttribute("aria-label", `Reproducir canción ${index + 1}: ${song}`);
+      button.innerHTML = `
+        <span class="number" aria-hidden="true">${index + 1}</span>
+        <span class="track-name"></span>
+        <span class="play-mark" aria-hidden="true">▶</span>
+      `;
+      button.querySelector(".track-name").textContent = song;
+
+      button.addEventListener("click", () => {
+        const source = `${AUDIO_FOLDER}${number}.mp3`;
+        if (player.getAttribute("src") !== source) {
+          player.src = source;
+        }
+        title.textContent = `${index + 1}. ${song}`;
+        document.querySelectorAll(".track").forEach(item => item.removeAttribute("aria-current"));
+        button.setAttribute("aria-current", "true");
+        player.play().catch(() => {
+          title.textContent = `${index + 1}. ${song} — presione reproducir`;
+        });
+      });
+
+      list.appendChild(button);
+    });
+  </script>
+</body>
+</html>
